@@ -1,4 +1,8 @@
-export type UserRole = "admin" | "doctor" | "patient";
+export enum UserRole {
+  ADMIN = "admin",
+  DOCTOR = "doctor",
+  PATIENT = "patient",
+}
 
 export type User = {
   id: number;
@@ -12,7 +16,7 @@ export type User = {
 export type UserForm = {
   name: string;
   email: string;
-  role: UserRole;
+  role: string;
   cpf: string;
   password: string;
 };

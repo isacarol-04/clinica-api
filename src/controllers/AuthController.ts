@@ -1,11 +1,11 @@
 import jwt from "jsonwebtoken";
 import { RequestHandler } from "express";
-import { userService } from "../../database/services/user";
-import { comparePassword } from "../../utils/hash";
-import { JwtPayload } from "../../models/jwt";
-import { UserRole } from "../../models/user";
+import { userService } from "../services/UserService";
+import { comparePassword } from "../utils/hash";
+import { JwtPayload } from "../models/jwt";
+import { UserRole } from "../models/user";
 
-export function loginHandler(): RequestHandler {
+export function login(): RequestHandler {
   const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
   const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
@@ -44,7 +44,7 @@ export function loginHandler(): RequestHandler {
   };
 }
 
-export function refreshTokenHandler(): RequestHandler {
+export function refreshToken(): RequestHandler {
   const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
   const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
