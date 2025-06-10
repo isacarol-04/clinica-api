@@ -1,7 +1,7 @@
 import { dataSource } from "./database";
 import { User } from "../entities/User";
 import { createUser } from "../services/userService"; 
-import { UserRole } from "../models/userRoles";
+import { UserRole } from "../types/userRoles";
 
 async function seed() {
   await dataSource.initialize();

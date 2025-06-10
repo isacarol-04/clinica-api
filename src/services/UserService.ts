@@ -1,19 +1,18 @@
 import { CreateUserDTO, UpdateUserDTO } from "../dtos/user.dto";
-import { UserRole } from "../models/userRoles";
+import { UserRole } from "../types/userRoles";
 import { hashPassword } from "../utils/hash";
 import { dataSource } from "../config/database";
 import { User } from "../entities/User";
-import { checkEmailUniqueness, checkCpfUniqueness } from "../utils/checkUniqueness";
+import {
+  checkEmailUniqueness,
+  checkCpfUniqueness,
+} from "../utils/checkUniqueness";
 
 const userRepo = dataSource.getRepository(User);
 
-export async function getAllUsers() {
-  return await userRepo.find();
-}
-
 export async function createUser(form: CreateUserDTO): Promise<User> {
   const hashedPassword = await hashPassword(form.password);
-  
+
   await checkEmailUniqueness(form.email);
   if (form.cpf) {
     await checkCpfUniqueness(form.cpf);
@@ -51,26 +50,24 @@ export async function updateUser(
   if (form.password) {
     form.password = await hashPassword(form.password);
   }
-  Object.assign(user, form);
-  const saved = await userRepo.save(user);
+  const updatedUser = await userRepo.preload({
+    id,
+    ...form,
+  });
+
+  const saved = await userRepo.save(updatedUser);
 
   return await userRepo.findOne({
     where: { id: saved.id },
   });
 }
 
-export async function deleteUser(id: number): Promise<boolean> {
-  const user = await userRepo.findOneBy({ id });
-  if (!user) {
-    return false; 
-  }
-
-  await userRepo.remove(user);
-  return true; 
+export async function getAllUsers() {
+  return await userRepo.find();
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  return await userRepo.findOneBy({  email  });
+  return await userRepo.findOneBy({ email });
 }
 
 export async function getUserByCpf(cpf: string): Promise<User | null> {
@@ -81,9 +78,27 @@ export async function getUserById(id: number): Promise<User | null> {
   return await userRepo.findOneBy({ id });
 }
 
+export async function getUserByIdAndRole(
+  id: number,
+  role: string
+): Promise<User | null> {
+  return userRepo.findOneBy({ id, role });
+}
+
 export async function getUserJWTInfo(email: string): Promise<User | null> {
   return userRepo.findOne({
     where: { email },
     select: ["id", "role", "password"],
   });
+}
+
+
+export async function deleteUser(id: number): Promise<boolean> {
+  const user = await userRepo.findOneBy({ id });
+  if (!user) {
+    return false;
+  }
+
+  await userRepo.remove(user);
+  return true;
 }

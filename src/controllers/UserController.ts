@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, RequestHandler, Response, NextFunction } from "express";
 import {
   createUser,
   deleteUser,
@@ -8,91 +8,127 @@ import {
 } from "../services/userService";
 import { createUserSchema, updateUserSchema } from "../validations/user";
 import { CreateUserDTO } from "../dtos/user.dto";
+import { createError } from "../utils/createError";
+import { getAppointmentsByUserId } from "../services/appointmentService";
+import { AuthorizedRequest } from "../types/request";
+import { UserRole } from "../types/userRoles";
 
-export const getUsers = async (_: Request, res: Response) => {
-  try {
-    const users = await getAllUsers();
-    res.json(users);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-export const createUserController = async (req: Request, res: Response) => {
-  try {
-    const validatedForm = await createUserSchema.validateAsync(req.body);
-    const userForm = validatedForm as CreateUserDTO;
-    const user = await createUser(userForm);
-
-    res.status(201).json(user);
-  } catch (error) {
-    console.error("Error creating user:", error);
-    if (error.isJoi) {
-      res.status(400).json({ message: error.message });
-      return;
+export function getUsers(): RequestHandler {
+  return async (_: Request, res: Response, next: NextFunction) => {
+    try {
+      const users = await getAllUsers();
+      res.json(users);
+    } catch (error: any) {
+      console.error("Error fetching users:", error);
+      next(error);
     }
-    const status = error.statusCode || 500;
-    const message = status === 500 ? "Internal server error." : error.message;
+  };
+}
 
-    res.status(status).json({ message });
-  }
-};
+export function getUserByIdController(): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        throw createError("Invalid user id", 400);
+      }
 
-export const updateUserController = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid user id" });
-      return;
+      const user = await getUserById(id);
+      if (!user) {
+        throw createError("User not found.", 404);
+      }
+
+      res.json(user);
+    } catch (error: any) {
+      console.error("Error fetching user:", error);
+      next(error);
     }
-    const validatedForm = await updateUserSchema.validateAsync(req.body);
+  };
+}
 
-    const userToUpdate = await getUserById(id);
-    if (!userToUpdate) {
-      res.status(404).json({ message: "User not found." });
-      return;
+export function createUserController(): RequestHandler {
+  return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
+    try {
+      const access = req.user;
+      const validatedForm = await createUserSchema.validateAsync(req.body);
+      const userForm = validatedForm as CreateUserDTO;
+
+      if (access.role == UserRole.DOCTOR) {
+        userForm.role = UserRole.PATIENT
+      }
+
+      const user = await createUser(userForm);
+
+      res.status(201).json(user);
+    } catch (error: any) {
+      console.error("Error creating user:", error);
+      if (error.isJoi) {
+        res.status(400).json({ message: error.message });
+        return;
+      }
+      next(error);
     }
+  };
+}
 
-    const updatedUser = await updateUser(id, validatedForm);
+export function updateUserController(): RequestHandler {
+  return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
+    try {
+      const access = req.user;
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+         throw createError("Invalid user id", 400);
+      }
 
-    res.json(updatedUser);
-  } catch (error) {
-    console.error("Error updating user:", error);
+      const validatedForm = await updateUserSchema.validateAsync(req.body);
 
-    if (error.isJoi) {
-      res.status(400).json({ message: error.message });
-      return;
+      const userToUpdate = await getUserById(id);
+      if (!userToUpdate) {
+         throw createError("User not found.", 404);
+      }
+
+      if (access.role != UserRole.ADMIN) {
+        validatedForm.role = userToUpdate.role;
+      }
+
+      const updatedUser = await updateUser(id, validatedForm);
+      res.json(updatedUser);
+    } catch (error: any) {
+      console.error("Error updating user:", error);
+      if (error.isJoi) {
+        res.status(400).json({ message: error.message });
+        return;
+      } 
+      next(error);
     }
+  };
+}
 
-    const status = error.statusCode || 500;
-    const message = status === 500 ? "Internal server error." : error.message;
+export function deleteUserController(): RequestHandler {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) {
+        throw createError("Invalid user id", 400);
+      }
 
-    res.status(status).json({ message });
-  }
-};
+      const appointments = await getAppointmentsByUserId(id);
+      if (appointments.length > 0) {
+        throw createError(
+          "Cannot delete user with scheduled appointments",
+          409
+        );
+      }
 
-export const deleteUserController = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid user id" });
-      return;
+      const deletedUser = await deleteUser(id);
+
+      if (!deletedUser) {
+        throw createError("User not found.", 404);
+      }
+      res.json({ message: "User deleted successfully", id });
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      next(error);
     }
-
-    const deletedUser = await deleteUser(id);
-
-    if (!deletedUser) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
-    res.json({ message: "User deleted successfully", id });
-    return;
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    const status = error.statusCode || 500;
-    const message = status === 500 ? "Internal server error." : error.message;
-
-    res.status(status).json({ message });
-  }
-};
+  };
+}

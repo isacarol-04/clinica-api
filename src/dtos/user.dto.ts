@@ -1,11 +1,11 @@
-import { UserRole } from "../models/userRoles";
+import { UserRole } from "../types/userRoles";
 
-export type CreateUserDTO = {
+export interface CreateUserDTO {
   name: string;
   email: string;
   role: UserRole;
   password: string;
   cpf?: string;
-};
+}
 
-export type UpdateUserDTO = Partial<CreateUserDTO>;
+export interface UpdateUserDTO extends Partial<CreateUserDTO> {}

@@ -1,9 +1,10 @@
 import jwt from "jsonwebtoken";
 import { RequestHandler } from "express";
-import { UserRole } from "../models/userRoles";
-import { JwtPayload } from "../models/jwt";
+import { UserRole } from "../types/userRoles";
+import { JwtPayload } from "../types/jwt";
+import { AuthorizedRequest } from "../types/request";
 
-export function authMiddleware(roles: UserRole[] = []): RequestHandler {
+export function authMiddleware(): RequestHandler {
   const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
   return (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -16,12 +17,7 @@ export function authMiddleware(roles: UserRole[] = []): RequestHandler {
     }
     try {
       const payload: JwtPayload = jwt.verify(token, ACCESS_SECRET);
-      (req as any).user = payload;
-
-      if (roles.length === 0 || roles.find((role) => role == payload.role)) {
-        next();
-        return;
-      }
+      (req as AuthorizedRequest).user = payload;
 
       res.status(403).json({ message: "Access denied." });
     } catch (err) {
@@ -31,11 +27,20 @@ export function authMiddleware(roles: UserRole[] = []): RequestHandler {
   };
 }
 
+export function roleMiddleware(roles: UserRole[] = []): RequestHandler {
+  return (req: AuthorizedRequest, res, next) => {
+    if (roles.length === 0 || roles.find((role) => role == req.user.role)) {
+      next();
+      return;
+    }
+  };
+}
+
 function getJWT(authHeader?: string): string | null {
   if (!authHeader) {
     return null;
   }
   const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") return null; 
+  if (parts.length !== 2 || parts[0] !== "Bearer") return null;
   return parts[1];
 }

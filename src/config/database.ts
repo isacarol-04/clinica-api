@@ -8,8 +8,8 @@ export const dataSource = new DataSource({
   username: process.env.DB_USER || "admin",
   password: process.env.DB_PASS || "123456",
   database: process.env.DB_NAME || "clinica",
-  synchronize: true,
+  synchronize: false,
   logging: false,
   entities: ["src/entities/**/*.ts"],
-  migrations: ["src/migration/**/*.ts"],
+  migrations: ["src/migrations/**/*.ts"],
 });

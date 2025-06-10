@@ -2,8 +2,8 @@ import jwt from "jsonwebtoken";
 import { RequestHandler } from "express";
 import { getUserJWTInfo } from "../services/userService";
 import { comparePassword } from "../utils/hash";
-import { JwtPayload } from "../models/jwt";
-import { UserRole } from "../models/userRoles";
+import { JwtPayload } from "../types/jwt";
+import { UserRole } from "../types/userRoles";
 
 
 export function login(): RequestHandler {

@@ -14,4 +14,4 @@ export const updateUserSchema = Joi.object({
   role: Joi.string().valid("admin", "doctor", "patient").optional(),
   password: Joi.string().min(6).optional(),
   cpf: Joi.string().pattern(/^\d{11}$/).optional(),
-});
+}).min(1);;

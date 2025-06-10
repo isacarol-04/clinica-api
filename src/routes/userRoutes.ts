@@ -1,21 +1,22 @@
 import { Router } from "express";
-import { authMiddleware } from "../middlewares/auth";
-import { UserRole } from "../models/userRoles";
+import { authMiddleware, roleMiddleware } from "../middlewares/auth";
+import { UserRole } from "../types/userRoles";
 import {
   getUsers,
   createUserController,
   updateUserController,
   deleteUserController,
+  getUserByIdController,
 } from "../controllers/userController";
-import { authorizeUserAction } from "../middlewares/roleAuthorization";
+import { protectUser } from "../middlewares/roleAuthorization";
 
 const router = Router();
-router.use(authMiddleware([UserRole.DOCTOR, UserRole.ADMIN]));
+router.use(authMiddleware(), roleMiddleware([UserRole.ADMIN, UserRole.DOCTOR]));
 
-router.get("/", getUsers);
+router.get("/", getUsers());
+router.get("/:id", protectUser, getUserByIdController());
+router.post("/", createUserController());
+router.put("/:id", protectUser, updateUserController());
+router.delete("/:id", protectUser, deleteUserController());
 
-router.post("/", authorizeUserAction, createUserController);
-router.put("/:id", authorizeUserAction, updateUserController);
-router.delete("/:id", authorizeUserAction, deleteUserController);
-
-export default router;	
+export default router;

@@ -13,11 +13,8 @@ export class Appointment {
   doctor: User;
 
   @Column({ type: "timestamp" })
-  scheduledAt: Date;
+  appointmentDate: Date;
 
-  @Column({ type: "text", nullable: true })
-  notes?: string;
-
-  @CreateDateColumn()
+  @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 }
