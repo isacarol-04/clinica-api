@@ -1,7 +1,7 @@
 import { dataSource } from "./database";
 import { User } from "../entities/User";
-import { userService } from "../services/UserService";
-import { UserRole } from "../models/user";
+import { createUser } from "../services/userService"; 
+import { UserRole } from "../models/userRoles";
 
 async function seed() {
   await dataSource.initialize();
@@ -15,12 +15,12 @@ async function seed() {
 
   console.log("Running Seed...");
 
-  await userService.createUser({
+  await createUser({
     name: "admin",
-    cpf: "1",
+    cpf: "00000000000",
     email: "admin@admin.com",
     password: "admin123",
-    role: "admin",
+    role: UserRole.ADMIN,
   });
 
   console.log("Default user created successfully.");

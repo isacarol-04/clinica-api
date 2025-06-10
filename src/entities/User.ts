@@ -24,7 +24,7 @@ export class User {
   @Column({ unique: true })
   cpf: string;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
   @CreateDateColumn({ type: "timestamp" })

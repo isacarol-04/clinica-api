@@ -1,7 +1,7 @@
-import "reflect-metadata";
 import { config } from "dotenv";
 config();
 
+import "reflect-metadata";
 import { dataSource } from "./config/database";
 import { createApi } from "./app";
 

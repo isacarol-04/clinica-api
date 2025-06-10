@@ -1,46 +1,52 @@
 import jwt from "jsonwebtoken";
 import { RequestHandler } from "express";
-import { userService } from "../services/UserService";
+import { getUserJWTInfo } from "../services/userService";
 import { comparePassword } from "../utils/hash";
 import { JwtPayload } from "../models/jwt";
-import { UserRole } from "../models/user";
+import { UserRole } from "../models/userRoles";
+
 
 export function login(): RequestHandler {
-  const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
-  const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+  const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
+  const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
   return async (req, res) => {
-    const { email, password } = req.body;
-    const user = await userService.findUserByEmail(email);
-    if (!user) {
-      res.sendStatus(401).json({
-        message: "Email or password is wrong.",
+    try {
+      const { email, password } = req.body;
+
+      const user = await getUserJWTInfo(email);
+      if (!user) {
+        res.status(401);
+        res.json({ message: "Email or password is incorrect." });
+        return;
+      }
+
+      const isMatch = await comparePassword(password, user.password);
+      if (!isMatch) {
+        res.status(401);
+        res.json({ message: "Email or password is incorrect." });
+        return;
+      }
+
+      const payload: JwtPayload = {
+        id: user.id,
+        email: user.email,
+        role: user.role as UserRole,
+      };
+
+      const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: "1h" });
+      const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: "7d" });
+
+      res.json({
+        message: "Login successful.",
+        accessToken,
+        refreshToken,
       });
-      return;
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500);
+      res.json({ message: "Internal server error." });
     }
-
-    const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) {
-      res.sendStatus(401).json({
-        message: "Email or password is wrong.",
-      });
-      return;
-    }
-
-    const payload: JwtPayload = {
-      id: user.id,
-      email: user.email,
-      role: user.role as UserRole,
-    };
-    const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: "1h" });
-
-    const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: "7d" });
-
-    res.json({
-      message: "Login successful.",
-      accessToken,
-      refreshToken,
-    });
   };
 }
 

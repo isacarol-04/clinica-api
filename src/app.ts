@@ -3,19 +3,21 @@ import { setupRoutes } from "./routes";
 
 const PORT = process.env.PORT || 3000;
 
-export function createApi() {
-  try {
-    const app = express();
+export async function createApi() {
+  const app = express();
 
-    app.use(express.json());
-    setupRoutes(app);
+  app.use(express.json());
+  setupRoutes(app); 
 
-    app.listen(PORT, () => {
+  return new Promise<void>((resolve, reject) => {
+    const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      resolve();
     });
 
-  } catch (error) {
-    console.error("Error starting the API:", error);
-    process.exit(1); 
-  }
+    server.on("error", (err) => {
+      console.error("Error starting the API:", err);
+      reject(err);
+    });
+  });
 }
