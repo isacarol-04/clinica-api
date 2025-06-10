@@ -4,7 +4,7 @@ import {
   UpdateAppointmentDTO,
 } from "../dtos/appointment.dto";
 import { Appointment } from "../entities/Appointment";
-import { validateAppointmentData } from "../utils/validateAppointmentData ";
+import { validateAppointmentData } from "../utils/validateAppointmentData";
 
 const appointmentRepo = dataSource.getRepository(Appointment);
 

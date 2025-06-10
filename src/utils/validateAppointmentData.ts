@@ -1,7 +1,7 @@
 import { getDoctorAppointmentsByDate, getPatientAppointmentsByDate } from "../services/appointmentService";
 import { isValidAppointmentDate } from "./checkDate";
-import { checkUserExistsByRole } from "./ckeckUserExists";
-import { createError } from "../utils/createError";
+import { checkUserExistsByRole } from "./checkUserExists";
+import { createError } from "./createError";
 
 export async function validateAppointmentData(
   patientId: number,
