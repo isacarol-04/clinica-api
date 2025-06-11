@@ -1,4 +1,4 @@
-import {  RequestHandler, Response, NextFunction } from "express";
+import { RequestHandler, Response, NextFunction } from "express";
 import {
   createAppointment,
   deleteAppointment,
@@ -35,7 +35,7 @@ export function getAppointments(): RequestHandler {
       const appointments: Appointment[] = await appointmentFetchers[
         access.role
       ]();
-      
+
       res.json(appointments);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -54,7 +54,7 @@ export function getAppointmentByIdController(): RequestHandler {
       }
 
       const appointmentFetchersById: Record<
-        UserRole, 
+        UserRole,
         (id: number) => Promise<Appointment | null>
       > = {
         [UserRole.ADMIN]: (id) => getAppointmentById(id),
@@ -62,7 +62,9 @@ export function getAppointmentByIdController(): RequestHandler {
         [UserRole.PATIENT]: (id) => getPatientAppointment(id, access.id),
       };
 
-      let appointment: Appointment = await appointmentFetchersById[access.role](id);
+      let appointment: Appointment = await appointmentFetchersById[access.role](
+        id
+      );
       if (!appointment) {
         throw createError("Appointment not found", 404);
       }
@@ -79,7 +81,8 @@ export function createAppointmentController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
       const validatedForm = await createAppointmentSchema.validateAsync(
-        req.body
+        req.body,
+        { abortEarly: false }
       );
       const appointmentForm = validatedForm as CreateAppointmentDTO;
       const appointment = await createAppointment(appointmentForm);
@@ -106,16 +109,21 @@ export function updateAppointmentController(): RequestHandler {
       }
 
       const validatedForm = await updateAppointmentSchema.validateAsync(
-        req.body
+        req.body,
+        { abortEarly: false }
       );
 
       const appointmentToUpdate = await getAppointmentById(id);
       if (!appointmentToUpdate) {
         throw createError("Appointment not found", 404);
       }
-      
+
       const userId = access.role != UserRole.ADMIN ? access.id : undefined;
-      const updatedAppointment = await updateAppointment(id, validatedForm, userId);
+      const updatedAppointment = await updateAppointment(
+        id,
+        validatedForm,
+        userId
+      );
       res.json(updatedAppointment);
     } catch (error: any) {
       console.error("Error updating Appointment:", error);
@@ -138,6 +146,8 @@ export function deleteAppointmentController(): RequestHandler {
       }
 
       const userId = access.role != UserRole.ADMIN ? access.id : undefined;
+      console.log(userId)
+
       const deletedAppointment = await deleteAppointment(id, userId);
 
       if (!deletedAppointment) {

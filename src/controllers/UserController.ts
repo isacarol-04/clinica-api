@@ -50,11 +50,13 @@ export function createUserController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
       const access = req.user;
-      const validatedForm = await createUserSchema.validateAsync(req.body);
+      const validatedForm = await createUserSchema.validateAsync(req.body, {
+        abortEarly: false,
+      });
       const userForm = validatedForm as CreateUserDTO;
 
       if (access.role == UserRole.DOCTOR) {
-        userForm.role = UserRole.PATIENT
+        userForm.role = UserRole.PATIENT;
       }
 
       const user = await createUser(userForm);
@@ -63,7 +65,8 @@ export function createUserController(): RequestHandler {
     } catch (error: any) {
       console.error("Error creating user:", error);
       if (error.isJoi) {
-        res.status(400).json({ message: error.message });
+        const errors = error.details.map((detail: any) => detail.message);
+        res.status(400).json({ errors });
         return;
       }
       next(error);
@@ -77,17 +80,20 @@ export function updateUserController(): RequestHandler {
       const access = req.user;
       const id = Number(req.params.id);
       if (isNaN(id)) {
-         throw createError("Invalid user id", 400);
+        throw createError("Invalid user id", 400);
       }
 
-      const validatedForm = await updateUserSchema.validateAsync(req.body);
+      let validatedForm = await updateUserSchema.validateAsync(req.body, {
+        abortEarly: false,
+      });
 
       const userToUpdate = await getUserById(id);
       if (!userToUpdate) {
-         throw createError("User not found.", 404);
+        throw createError("User not found.", 404);
       }
 
       if (access.role != UserRole.ADMIN) {
+        console.log("entrei")
         validatedForm.role = userToUpdate.role;
       }
 
@@ -96,9 +102,10 @@ export function updateUserController(): RequestHandler {
     } catch (error: any) {
       console.error("Error updating user:", error);
       if (error.isJoi) {
-        res.status(400).json({ message: error.message });
+        const errors = error.details.map((detail: any) => detail.message);
+        res.status(400).json({ errors });
         return;
-      } 
+      }
       next(error);
     }
   };

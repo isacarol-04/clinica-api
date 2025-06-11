@@ -16,10 +16,9 @@ export function authMiddleware(): RequestHandler {
       return;
     }
     try {
-      const payload: JwtPayload = jwt.verify(token, ACCESS_SECRET);
+      const payload: JwtPayload = jwt.verify(token, ACCESS_SECRET) as JwtPayload;
       (req as AuthorizedRequest).user = payload;
-
-      res.status(403).json({ message: "Access denied." });
+      next();
     } catch (err) {
       console.log(err);
       res.status(401).json({ message: "Invalid token." });
@@ -29,9 +28,10 @@ export function authMiddleware(): RequestHandler {
 
 export function roleMiddleware(roles: UserRole[] = []): RequestHandler {
   return (req: AuthorizedRequest, res, next) => {
-    if (roles.length === 0 || roles.find((role) => role == req.user.role)) {
+    if (roles.length === 0 || roles.includes(req.user.role)) {
       next();
-      return;
+    } else {
+      res.status(403).json({ message: "Access denied." });
     }
   };
 }

@@ -23,6 +23,7 @@ export const protectUser = async (
     const user = await getUserById(userId);
     if (user == null) {
     }
+    console.log(access, user)
 
     if (access.role == "admin") {
       next();

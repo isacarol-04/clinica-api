@@ -21,7 +21,7 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   cpf: string;
 
   @Column({ select: false })

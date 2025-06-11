@@ -43,10 +43,10 @@ export async function getDoctorAppointments(doctorId: number) {
   });
 }
 
-export async function getPatientAppointments(doctorId: number) {
+export async function getPatientAppointments(patientId: number) {
   return await appointmentRepo.find({
     relations: ["patient", "doctor"],
-    where: [{ doctor: { id: doctorId } }],
+    where: [{ patient: { id: patientId } }],
     order: {
       appointmentDate: "DESC",
     },
@@ -63,14 +63,20 @@ export async function getAppointmentsByUserId(userId: number) {
 export async function getDoctorAppointment(id: number, doctorId: number) {
   return await appointmentRepo.findOne({
     relations: ["patient", "doctor"],
-    where: [{ doctor: { id: doctorId } }, { id }],
+    where: {
+      id,
+      doctor: { id: doctorId },
+    },
   });
 }
 
 export async function getPatientAppointment(id: number, patientId: number) {
   return await appointmentRepo.findOne({
     relations: ["patient", "doctor"],
-    where: [{ patient: { id: patientId } }, { id }],
+    where: {
+      id,
+      patient: { id: patientId },
+    },
   });
 }
 
@@ -88,9 +94,7 @@ export async function getPatientAppointmentsByDate(
   appointmentDate: Date
 ): Promise<Appointment | null> {
   return appointmentRepo.findOne({
-    where: [
-      { patient: { id: userId }, appointmentDate },
-    ],
+    where: [{ patient: { id: userId }, appointmentDate }],
   });
 }
 
@@ -99,12 +103,9 @@ export async function getDoctorAppointmentsByDate(
   appointmentDate: Date
 ): Promise<Appointment | null> {
   return appointmentRepo.findOne({
-    where: [
-      { doctor: { id: userId }, appointmentDate },
-    ],
+    where: [{ doctor: { id: userId }, appointmentDate }],
   });
 }
-
 
 export async function updateAppointment(
   id: number,
@@ -140,7 +141,9 @@ export async function deleteAppointment(
 ): Promise<boolean> {
   let appointment: Appointment;
   if (userId) {
+    console.log("entrou aqui");
     appointment = await getDoctorAppointment(id, userId);
+    console.log(appointment);
   } else {
     appointment = await getAppointmentById(id);
   }
@@ -148,6 +151,6 @@ export async function deleteAppointment(
     return false;
   }
 
-  await appointmentRepo.remove(appointment);
+  // await appointmentRepo.remove(appointment);
   return true;
 }

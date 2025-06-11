@@ -8,7 +8,7 @@ import {
   deleteUserController,
   getUserByIdController,
 } from "../controllers/userController";
-import { protectUser } from "../middlewares/roleAuthorization";
+import { protectUser } from "../middlewares/protectUser";
 
 const router = Router();
 router.use(authMiddleware(), roleMiddleware([UserRole.ADMIN, UserRole.DOCTOR]));
