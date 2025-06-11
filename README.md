@@ -42,7 +42,7 @@ Esta API permite gerenciar usuários (administradores, médicos e pacientes) e a
         Mostra detalhes de um agendamento específico. Admins veem todos, Médicos e Pacientes veem apenas os seus.
     * **🔒 Acesso restrito: apenas Admins e Médicos**
     * ```POST / ```
-        Cria novo agendamento. 
+        Cria novo agendamento. Médicos criam apenas para eles mesmos.
     * ```PUT /:id ```
         Atualiza um agendamento existente. Admins podem atualizar todos, Médicos podem atualizar apenas os seus.
     * ```DELETE /:id ```

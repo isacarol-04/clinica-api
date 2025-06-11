@@ -1,4 +1,8 @@
-import { CreateUserDTO, UpdateUserDTO } from "../dtos/user.dto";
+import {
+  CreateUserDTO,
+  UpdateUserDTO,
+  UserResponseDTO,
+} from "../dtos/user.dto";
 import { UserRole } from "../types/userRoles";
 import { hashPassword } from "../utils/hash";
 import { dataSource } from "../config/database";
@@ -7,10 +11,13 @@ import {
   checkEmailUniqueness,
   checkCpfUniqueness,
 } from "../utils/checkUniqueness";
+import { toUserResponseDTO } from "../utils/mappers";
 
 const userRepo = dataSource.getRepository(User);
 
-export async function createUser(form: CreateUserDTO): Promise<User> {
+export async function createUser(
+  form: CreateUserDTO
+): Promise<UserResponseDTO> {
   const hashedPassword = await hashPassword(form.password);
 
   await checkEmailUniqueness(form.email);
@@ -25,15 +32,21 @@ export async function createUser(form: CreateUserDTO): Promise<User> {
   });
   const saved = await userRepo.save(user);
 
-  return await userRepo.findOne({
+  const savedUser = await userRepo.findOne({
     where: { id: saved.id },
   });
+
+  if (!savedUser) {
+    throw new Error("User not found after save");
+  }
+
+  return toUserResponseDTO(savedUser);
 }
 
 export async function updateUser(
   id: number,
   form: UpdateUserDTO
-): Promise<User | null> {
+): Promise<UserResponseDTO | null> {
   const user = await userRepo.findOneBy({ id });
   if (!user) {
     return null;
@@ -57,32 +70,47 @@ export async function updateUser(
 
   const saved = await userRepo.save(updatedUser);
 
-  return await userRepo.findOne({
+  const savedUser = await userRepo.findOne({
     where: { id: saved.id },
   });
+
+  if (!savedUser) {
+    return null;
+  }
+
+  return toUserResponseDTO(savedUser);
 }
 
-export async function getAllUsers() {
-  return await userRepo.find();
+export async function getAllUsers(): Promise<UserResponseDTO[]> {
+  const users = await userRepo.find();
+  return users.map(toUserResponseDTO);
 }
 
-export async function getUserByEmail(email: string): Promise<User | null> {
-  return await userRepo.findOneBy({ email });
+export async function getUserByEmail(
+  email: string
+): Promise<UserResponseDTO | null> {
+  const user = await userRepo.findOneBy({ email });
+  return user ? toUserResponseDTO(user) : null;
 }
 
-export async function getUserByCpf(cpf: string): Promise<User | null> {
-  return await userRepo.findOneBy({ cpf });
+export async function getUserByCpf(
+  cpf: string
+): Promise<UserResponseDTO | null> {
+  const user = await userRepo.findOneBy({ cpf });
+  return user ? toUserResponseDTO(user) : null;
 }
 
-export async function getUserById(id: number): Promise<User | null> {
-  return await userRepo.findOneBy({ id });
+export async function getUserById(id: number): Promise<UserResponseDTO | null> {
+  const user = await userRepo.findOneBy({ id });
+  return user ? toUserResponseDTO(user) : null;
 }
 
 export async function getUserByIdAndRole(
   id: number,
   role: string
-): Promise<User | null> {
-  return userRepo.findOneBy({ id, role });
+): Promise<UserResponseDTO | null> {
+  const user = await userRepo.findOneBy({ id, role });
+  return user ? toUserResponseDTO(user) : null;
 }
 
 export async function getUserJWTInfo(email: string): Promise<User | null> {

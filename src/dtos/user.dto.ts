@@ -9,3 +9,11 @@ export interface CreateUserDTO {
 }
 
 export interface UpdateUserDTO extends Partial<CreateUserDTO> {}
+
+export interface UserResponseDTO {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  cpf?: string;
+}

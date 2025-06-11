@@ -80,11 +80,17 @@ export function getAppointmentByIdController(): RequestHandler {
 export function createAppointmentController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
+      const currentUser = req.user;
       const validatedForm = await createAppointmentSchema.validateAsync(
         req.body,
         { abortEarly: false }
       );
       const appointmentForm = validatedForm as CreateAppointmentDTO;
+      
+      if (currentUser.role == UserRole.DOCTOR) {
+        appointmentForm.doctorId = currentUser.id;
+      }
+
       const appointment = await createAppointment(appointmentForm);
 
       res.status(201).json(appointment);
@@ -146,8 +152,6 @@ export function deleteAppointmentController(): RequestHandler {
       }
 
       const userId = currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
-      console.log(userId)
-
       const deletedAppointment = await deleteAppointment(id, userId);
 
       if (!deletedAppointment) {
