@@ -19,8 +19,8 @@ export function toAppointmentResponseDTO(
 ): AppointmentResponseDTO {
   return {
     id: appointment.id,
-    patientId: appointment.patient,
-    doctorId: appointment.doctor,
+    patient: appointment.patient,
+    doctor: appointment.doctor,
     appointmentDate: appointment.appointmentDate,
   };
 }

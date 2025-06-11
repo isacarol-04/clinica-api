@@ -10,7 +10,7 @@ export interface UpdateAppointmentDTO extends Partial<CreateAppointmentDTO> {}
 
 export interface AppointmentResponseDTO {
   id: number;
-  patientId: User;
-  doctorId: User;
+  patient: User;
+  doctor: User;
   appointmentDate: Date;
 }
