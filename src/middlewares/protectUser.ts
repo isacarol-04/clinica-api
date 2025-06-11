@@ -21,9 +21,9 @@ export const protectUser = async (
     }
 
     const user = await getUserById(userId);
-    if (user == null) {
+    if (!user) {
+      throw createError("User not found.", 404);
     }
-    console.log(access, user)
 
     if (access.role == "admin") {
       next();

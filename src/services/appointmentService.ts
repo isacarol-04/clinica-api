@@ -94,7 +94,10 @@ export async function getPatientAppointmentsByDate(
   appointmentDate: Date
 ): Promise<Appointment | null> {
   return appointmentRepo.findOne({
-    where: [{ patient: { id: userId }, appointmentDate }],
+    where: {
+      patient: { id: userId },
+      appointmentDate,
+    },
   });
 }
 
@@ -103,7 +106,10 @@ export async function getDoctorAppointmentsByDate(
   appointmentDate: Date
 ): Promise<Appointment | null> {
   return appointmentRepo.findOne({
-    where: [{ doctor: { id: userId }, appointmentDate }],
+    where: {
+      doctor: { id: userId },
+      appointmentDate,
+    },
   });
 }
 
@@ -151,6 +157,6 @@ export async function deleteAppointment(
     return false;
   }
 
-  // await appointmentRepo.remove(appointment);
+  await appointmentRepo.remove(appointment);
   return true;
 }
