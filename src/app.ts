@@ -8,7 +8,7 @@ export async function createApi() {
   const app = express();
 
   app.use(express.json());
-  setupRoutes(app); 
+  setupRoutes(app);
 
   return new Promise<void>((resolve, reject) => {
     const server = app.listen(PORT, () => {

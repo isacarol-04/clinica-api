@@ -16,7 +16,10 @@ export function authMiddleware(): RequestHandler {
       return;
     }
     try {
-      const payload: JwtPayload = jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+      const payload: JwtPayload = jwt.verify(
+        token,
+        ACCESS_SECRET
+      ) as JwtPayload;
       (req as AuthorizedRequest).user = payload;
       next();
     } catch (err) {

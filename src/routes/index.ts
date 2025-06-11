@@ -12,7 +12,7 @@ export function setupRoutes(app: Express) {
   });
   router.use("/users", userRoutes);
   router.use("/auth", authRoutes);
-  router.use("/appointments", appointmentRoutes)
+  router.use("/appointments", appointmentRoutes);
 
   app.use("/api/v1", router);
   app.use(errorHandler);

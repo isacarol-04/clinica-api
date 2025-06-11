@@ -1,16 +1,17 @@
 import jwt from "jsonwebtoken";
-import { RequestHandler } from "express";
+import { RequestHandler, Response } from "express";
 import { getUserJWTInfo } from "../services/userService";
 import { comparePassword } from "../utils/hash";
 import { JwtPayload } from "../types/jwt";
 import { UserRole } from "../types/userRoles";
 import { env } from "../config/env";
+import { AuthorizedRequest } from "../types/request";
 
 export function login(): RequestHandler {
   const ACCESS_SECRET = env.JWT_ACCESS_SECRET;
   const REFRESH_SECRET = env.JWT_REFRESH_SECRET;
 
-  return async (req, res) => {
+  return async (req: AuthorizedRequest, res: Response) => {
     try {
       const { email, password } = req.body;
 

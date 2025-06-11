@@ -9,13 +9,13 @@ export const protectUser = async (
   next: NextFunction
 ) => {
   try {
-    const access = req.user;
+    const currentUser = req.user;
     const userId = Number(req.params.id);
     if (isNaN(userId)) {
       throw createError("User id is not a number.", 400);
     }
 
-    if (userId == access.id) {
+    if (userId == currentUser.id) {
       next();
       return;
     }
@@ -25,12 +25,12 @@ export const protectUser = async (
       throw createError("User not found.", 404);
     }
 
-    if (access.role == "admin") {
+    if (currentUser.role == "admin") {
       next();
       return;
     }
 
-    if (access.role == "doctor" && user.role != "admin") {
+    if (currentUser.role == "doctor" && user.role != "admin") {
       next();
       return;
     }

@@ -92,7 +92,6 @@ export async function getUserJWTInfo(email: string): Promise<User | null> {
   });
 }
 
-
 export async function deleteUser(id: number): Promise<boolean> {
   const user = await userRepo.findOneBy({ id });
   if (!user) {

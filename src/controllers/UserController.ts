@@ -49,13 +49,13 @@ export function getUserByIdController(): RequestHandler {
 export function createUserController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const validatedForm = await createUserSchema.validateAsync(req.body, {
         abortEarly: false,
       });
       const userForm = validatedForm as CreateUserDTO;
 
-      if (access.role == UserRole.DOCTOR) {
+      if (currentUser.role == UserRole.DOCTOR) {
         userForm.role = UserRole.PATIENT;
       }
 
@@ -77,7 +77,7 @@ export function createUserController(): RequestHandler {
 export function updateUserController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const id = Number(req.params.id);
       if (isNaN(id)) {
         throw createError("Invalid user id", 400);
@@ -92,7 +92,7 @@ export function updateUserController(): RequestHandler {
         throw createError("User not found.", 404);
       }
 
-      if (access.role != UserRole.ADMIN) {
+      if (currentUser.role != UserRole.ADMIN) {
         console.log("entrei")
         validatedForm.role = userToUpdate.role;
       }

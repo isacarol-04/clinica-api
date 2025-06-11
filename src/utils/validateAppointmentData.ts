@@ -1,4 +1,7 @@
-import { getDoctorAppointmentsByDate, getPatientAppointmentsByDate } from "../services/appointmentService";
+import {
+  getDoctorAppointmentsByDate,
+  getPatientAppointmentsByDate,
+} from "../services/appointmentService";
 import { isValidAppointmentDate } from "./checkDate";
 import { checkUserExistsByRole } from "./checkUserExists";
 import { createError } from "./createError";
@@ -7,7 +10,7 @@ export async function validateAppointmentData(
   patientId: number,
   doctorId: number,
   appointmentDate: Date,
-  appointmentIdToIgnore?: number 
+  appointmentIdToIgnore?: number
 ) {
   const patientExists = await checkUserExistsByRole(patientId, "patient");
   if (!patientExists) {
@@ -26,12 +29,18 @@ export async function validateAppointmentData(
     );
   }
 
-  const patientConflict = await getPatientAppointmentsByDate(patientId, appointmentDate);
+  const patientConflict = await getPatientAppointmentsByDate(
+    patientId,
+    appointmentDate
+  );
   if (patientConflict && patientConflict.id !== appointmentIdToIgnore) {
     throw createError("Patient already has an appointment at this time.", 409);
   }
 
-  const doctorConflict = await getDoctorAppointmentsByDate(doctorId, appointmentDate);
+  const doctorConflict = await getDoctorAppointmentsByDate(
+    doctorId,
+    appointmentDate
+  );
   if (doctorConflict && doctorConflict.id !== appointmentIdToIgnore) {
     throw createError("Doctor already has an appointment at this time.", 409);
   }

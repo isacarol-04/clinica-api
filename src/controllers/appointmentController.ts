@@ -23,17 +23,17 @@ import { Appointment } from "../entities/Appointment";
 export function getAppointments(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const appointmentFetchers: Record<
         UserRole,
         () => Promise<Appointment[]>
       > = {
         [UserRole.ADMIN]: () => getAllAppointments(),
-        [UserRole.DOCTOR]: () => getDoctorAppointments(access.id),
-        [UserRole.PATIENT]: () => getPatientAppointments(access.id),
+        [UserRole.DOCTOR]: () => getDoctorAppointments(currentUser.id),
+        [UserRole.PATIENT]: () => getPatientAppointments(currentUser.id),
       };
       const appointments: Appointment[] = await appointmentFetchers[
-        access.role
+        currentUser.role
       ]();
 
       res.json(appointments);
@@ -47,10 +47,10 @@ export function getAppointments(): RequestHandler {
 export function getAppointmentByIdController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const id = Number(req.params.id);
       if (isNaN(id)) {
-        throw createError("Invalid Appointment id", 400);
+        throw createError("Invalid appointment id", 400);
       }
 
       const appointmentFetchersById: Record<
@@ -58,11 +58,11 @@ export function getAppointmentByIdController(): RequestHandler {
         (id: number) => Promise<Appointment | null>
       > = {
         [UserRole.ADMIN]: (id) => getAppointmentById(id),
-        [UserRole.DOCTOR]: (id) => getDoctorAppointment(id, access.id),
-        [UserRole.PATIENT]: (id) => getPatientAppointment(id, access.id),
+        [UserRole.DOCTOR]: (id) => getDoctorAppointment(id, currentUser.id),
+        [UserRole.PATIENT]: (id) => getPatientAppointment(id, currentUser.id),
       };
 
-      let appointment: Appointment = await appointmentFetchersById[access.role](
+      let appointment: Appointment = await appointmentFetchersById[currentUser.role](
         id
       );
       if (!appointment) {
@@ -102,10 +102,10 @@ export function createAppointmentController(): RequestHandler {
 export function updateAppointmentController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const id = Number(req.params.id);
       if (isNaN(id)) {
-        throw createError("Invalid Appointment id", 400);
+        throw createError("Invalid appointment id", 400);
       }
 
       const validatedForm = await updateAppointmentSchema.validateAsync(
@@ -118,7 +118,7 @@ export function updateAppointmentController(): RequestHandler {
         throw createError("Appointment not found", 404);
       }
 
-      const userId = access.role != UserRole.ADMIN ? access.id : undefined;
+      const userId = currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
       const updatedAppointment = await updateAppointment(
         id,
         validatedForm,
@@ -126,7 +126,7 @@ export function updateAppointmentController(): RequestHandler {
       );
       res.json(updatedAppointment);
     } catch (error: any) {
-      console.error("Error updating Appointment:", error);
+      console.error("Error updating appointment:", error);
       if (error.isJoi) {
         res.status(400).json({ message: error.message });
         return;
@@ -139,13 +139,13 @@ export function updateAppointmentController(): RequestHandler {
 export function deleteAppointmentController(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
     try {
-      const access = req.user;
+      const currentUser = req.user;
       const id = Number(req.params.id);
       if (isNaN(id)) {
-        throw createError("Invalid Appointment id", 400);
+        throw createError("Invalid appointment id", 400);
       }
 
-      const userId = access.role != UserRole.ADMIN ? access.id : undefined;
+      const userId = currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
       console.log(userId)
 
       const deletedAppointment = await deleteAppointment(id, userId);
@@ -155,7 +155,7 @@ export function deleteAppointmentController(): RequestHandler {
       }
       res.json({ message: "Appointment deleted successfully", id });
     } catch (error: any) {
-      console.error("Error deleting Appointment:", error);
+      console.error("Error deleting appointment:", error);
       next(error);
     }
   };
