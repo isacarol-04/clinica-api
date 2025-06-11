@@ -1,7 +1,8 @@
 import express from "express";
 import { setupRoutes } from "./routes";
+import { env } from "./config/env";
 
-const PORT = process.env.PORT || 3000;
+const PORT = env.PORT;
 
 export async function createApi() {
   const app = express();

@@ -4,11 +4,11 @@ import { getUserJWTInfo } from "../services/userService";
 import { comparePassword } from "../utils/hash";
 import { JwtPayload } from "../types/jwt";
 import { UserRole } from "../types/userRoles";
-
+import { env } from "../config/env";
 
 export function login(): RequestHandler {
-  const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
-  const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+  const ACCESS_SECRET = env.JWT_ACCESS_SECRET;
+  const REFRESH_SECRET = env.JWT_REFRESH_SECRET;
 
   return async (req, res) => {
     try {
@@ -34,8 +34,8 @@ export function login(): RequestHandler {
         role: user.role as UserRole,
       };
 
-      const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: "1h" });
-      const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: "7d" });
+      const accessToken = jwt.sign(payload, ACCESS_SECRET, { expiresIn: env.JWT_EXPIRATION });
+      const refreshToken = jwt.sign(payload, REFRESH_SECRET, { expiresIn: env.JWT_REFRESH_EXPIRATION });
 
       res.json({
         message: "Login successful.",
@@ -51,8 +51,8 @@ export function login(): RequestHandler {
 }
 
 export function refreshToken(): RequestHandler {
-  const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
-  const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+  const ACCESS_SECRET = env.JWT_ACCESS_SECRET;
+  const REFRESH_SECRET = env.JWT_REFRESH_SECRET;
 
   return (req, res) => {
     const { refreshToken } = req.body;
@@ -72,7 +72,7 @@ export function refreshToken(): RequestHandler {
           role: payload.role,
         },
         ACCESS_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: env.JWT_EXPIRATION }
       );
 
       res.json({

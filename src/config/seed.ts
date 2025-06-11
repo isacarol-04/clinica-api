@@ -1,7 +1,8 @@
 import { dataSource } from "./database";
 import { User } from "../entities/User";
-import { createUser } from "../services/userService"; 
+import { createUser } from "../services/userService";
 import { UserRole } from "../types/userRoles";
+import { env } from "./env";
 
 async function seed() {
   await dataSource.initialize();
@@ -16,10 +17,10 @@ async function seed() {
   console.log("Running Seed...");
 
   await createUser({
-    name: "admin",
-    cpf: "00000000000",
-    email: "admin@admin.com",
-    password: "admin123",
+    name: env.ADMIN_NAME,
+    cpf: env.ADMIN_CPF,
+    email: env.ADMIN_EMAIL,
+    password: env.ADMIN_PASSWORD,
     role: UserRole.ADMIN,
   });
 
