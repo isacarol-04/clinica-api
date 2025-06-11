@@ -1,0 +1,40 @@
+{
+  "name": "clinica-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "ts-node src/server.ts",
+    "seed": "ts-node src/config/seed.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isacarol-04/clinica-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/isacarol-04/clinica-api/issues"
+  },
+  "homepage": "https://github.com/isacarol-04/clinica-api#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.24"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.30",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  }
+}
