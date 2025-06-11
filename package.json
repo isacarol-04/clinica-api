@@ -7,7 +7,9 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "seed": "ts-node src/config/seed.ts"
+    "seed": "ts-node src/config/seed.ts",
+    "typeorm": "ts-node --esm ./node_modules/typeorm/cli.js",
+    "migration:run": "npm run typeorm -- migration:run --dataSource src/config/database.ts"
   },
   "repository": {
     "type": "git",

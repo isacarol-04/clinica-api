@@ -147,9 +147,7 @@ export async function deleteAppointment(
 ): Promise<boolean> {
   let appointment: Appointment;
   if (userId) {
-    console.log("entrou aqui");
     appointment = await getDoctorAppointment(id, userId);
-    console.log(appointment);
   } else {
     appointment = await getAppointmentById(id);
   }
