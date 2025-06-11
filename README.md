@@ -7,7 +7,7 @@ Esta API permite gerenciar usuários (administradores, médicos e pacientes) e a
 * **Autenticação JWT**: Login seguro e renovação de tokens de acesso usando refresh tokens.
 * **Gerenciamento de Usuários**: CRUD completo para usuários (Admins, Médicos e Pacientes), com restrições de acesso específicas para cada tipo de usuário.
 * **Agendamento de Consultas**: CRUD de consultas médicas, respeitando regras de acesso e garantindo integridade dos dados.
-* **Autorização por Papéis**: Controle de acesso para proteger dados sensíveis.
+* **Autorização por Permissões**: Controle de acesso para proteger dados sensíveis.
 * **Validação de Dados**: Uso de Joi para garantir consistência dos dados recebidos.
 * **Tratamento Centralizado de Erros**: Middleware global para respostas de erro padronizadas.
 

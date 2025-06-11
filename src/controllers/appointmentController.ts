@@ -19,6 +19,7 @@ import { createError } from "../utils/createError";
 import { AuthorizedRequest } from "../types/request";
 import { UserRole } from "../types/userRoles";
 import { Appointment } from "../entities/Appointment";
+import { toAppointmentResponseDTO } from "../utils/mappers";
 
 export function getAppointments(): RequestHandler {
   return async (req: AuthorizedRequest, res: Response, next: NextFunction) => {
@@ -36,7 +37,7 @@ export function getAppointments(): RequestHandler {
         currentUser.role
       ]();
 
-      res.json(appointments);
+      res.json(appointments.map(toAppointmentResponseDTO));
     } catch (error) {
       console.error("Error fetching appointments:", error);
       next(error);
@@ -62,14 +63,14 @@ export function getAppointmentByIdController(): RequestHandler {
         [UserRole.PATIENT]: (id) => getPatientAppointment(id, currentUser.id),
       };
 
-      let appointment: Appointment = await appointmentFetchersById[currentUser.role](
-        id
-      );
+      let appointment: Appointment = await appointmentFetchersById[
+        currentUser.role
+      ](id);
       if (!appointment) {
         throw createError("Appointment not found", 404);
       }
 
-      res.json(appointment);
+      res.json(toAppointmentResponseDTO(appointment));
     } catch (error: any) {
       console.error("Error fetching appointment:", error);
       next(error);
@@ -86,14 +87,14 @@ export function createAppointmentController(): RequestHandler {
         { abortEarly: false }
       );
       const appointmentForm = validatedForm as CreateAppointmentDTO;
-      
+
       if (currentUser.role == UserRole.DOCTOR) {
         appointmentForm.doctorId = currentUser.id;
       }
 
       const appointment = await createAppointment(appointmentForm);
 
-      res.status(201).json(appointment);
+      res.status(201).json(toAppointmentResponseDTO(appointment));
     } catch (error: any) {
       console.error("Error creating appointment:", error);
       if (error.isJoi) {
@@ -124,13 +125,14 @@ export function updateAppointmentController(): RequestHandler {
         throw createError("Appointment not found", 404);
       }
 
-      const userId = currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
+      const userId =
+        currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
       const updatedAppointment = await updateAppointment(
         id,
         validatedForm,
         userId
       );
-      res.json(updatedAppointment);
+      res.json(toAppointmentResponseDTO(updatedAppointment));
     } catch (error: any) {
       console.error("Error updating appointment:", error);
       if (error.isJoi) {
@@ -151,7 +153,8 @@ export function deleteAppointmentController(): RequestHandler {
         throw createError("Invalid appointment id", 400);
       }
 
-      const userId = currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
+      const userId =
+        currentUser.role != UserRole.ADMIN ? currentUser.id : undefined;
       const deletedAppointment = await deleteAppointment(id, userId);
 
       if (!deletedAppointment) {

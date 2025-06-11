@@ -12,12 +12,13 @@ import { createError } from "../utils/createError";
 import { getAppointmentsByUserId } from "../services/appointmentService";
 import { AuthorizedRequest } from "../types/request";
 import { UserRole } from "../types/userRoles";
+import { toUserResponseDTO } from "../utils/mappers";
 
 export function getUsers(): RequestHandler {
   return async (_: Request, res: Response, next: NextFunction) => {
     try {
       const users = await getAllUsers();
-      res.json(users);
+      res.json(users.map(toUserResponseDTO));
     } catch (error: any) {
       console.error("Error fetching users:", error);
       next(error);
@@ -38,7 +39,7 @@ export function getUserByIdController(): RequestHandler {
         throw createError("User not found.", 404);
       }
 
-      res.json(user);
+      res.json(toUserResponseDTO(user));
     } catch (error: any) {
       console.error("Error fetching user:", error);
       next(error);
@@ -61,7 +62,7 @@ export function createUserController(): RequestHandler {
 
       const user = await createUser(userForm);
 
-      res.status(201).json(user);
+      res.status(201).json(toUserResponseDTO(user));
     } catch (error: any) {
       console.error("Error creating user:", error);
       if (error.isJoi) {
@@ -93,12 +94,12 @@ export function updateUserController(): RequestHandler {
       }
 
       if (currentUser.role != UserRole.ADMIN) {
-        console.log("entrei")
+        console.log("entrei");
         validatedForm.role = userToUpdate.role;
       }
 
       const updatedUser = await updateUser(id, validatedForm);
-      res.json(updatedUser);
+      res.json(toUserResponseDTO(updatedUser));
     } catch (error: any) {
       console.error("Error updating user:", error);
       if (error.isJoi) {
